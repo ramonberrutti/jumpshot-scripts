@@ -17,7 +17,9 @@ impl ScriptService for ScriptV1 {
     async fn run(&self, request: Request<RunRequest>) -> Result<Response<RunResponse>, Status> {
         let req = request.get_ref();
 
-        let module = wasmtime::Module::from_binary(&self.engine, &req.script)
+        println!("{:?}", req.script);
+
+        let module = wasmtime::Module::new(&self.engine, &req.script)
             .map_err(|e| Status::new(tonic::Code::Internal, e.to_string()))?;
 
         let mut store = wasmtime::Store::new(&self.engine, ());
@@ -25,17 +27,16 @@ impl ScriptService for ScriptV1 {
         let instance = wasmtime::Instance::new(&mut store, &module, &[])
             .map_err(|e| Status::new(tonic::Code::Internal, e.to_string()))?;
 
-        let answer = instance.get_func(&mut store, "answer")
-            .ok_or(Status::new(tonic::Code::InvalidArgument, "function not found"))?;
-
-        let answer = answer.typed::<(), i32, _>(&store)
+        let answer = instance
+            .get_typed_func::<(), i32, _>(&mut store, "answer")
             .map_err(|e| Status::new(tonic::Code::Internal, e.to_string()))?;
 
-        let result = answer.call(&mut store, ())
-        .map_err(|e| Status::new(tonic::Code::Internal, e.to_string()))?;
+        let result = answer
+            .call(&mut store, ())
+            .map_err(|e| Status::new(tonic::Code::Internal, e.to_string()))?;
 
-        Ok(Response::new(RunResponse{
-            output: format!("answer is {}", result)
+        Ok(Response::new(RunResponse {
+            output: format!("answer is {}", result),
         }))
     }
 }

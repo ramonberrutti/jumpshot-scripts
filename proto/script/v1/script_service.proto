@@ -8,11 +8,14 @@ service ScriptService {
 }
 
 message RunRequest {
+  // type of script.
+  string type = 1; // Now string but create a enum.
+
   // Binary script.
-  bytes script = 1;
+  bytes script = 2;
 
   // Input to send to the script.
-  string input = 2; // Convert this to more flexible input.
+  string input = 3; // Convert this to more flexible input.
 }
 
 message RunResponse {
