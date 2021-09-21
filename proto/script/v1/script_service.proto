@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package script.v1;
+
+// Script service.
+service ScriptService {
+  rpc Run (RunRequest) returns (RunResponse);
+}
+
+message RunRequest {
+  // Binary script.
+  bytes script = 1;
+
+  // Input to send to the script.
+  string input = 2; // Convert this to more flexible input.
+}
+
+message RunResponse {
+  string output = 1; // Convert this to more flexible output.
+}
